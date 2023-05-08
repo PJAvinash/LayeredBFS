@@ -36,7 +36,7 @@ for remotehost in "${hostname_array[@]}"
 do
   # Skip the host machine
   if [[ "$remotehost" == "$host" ]]; then
-    java Main "Launcher/$configPath" &
+    java Main "Launcher/$configPath $root" &
     continue
   fi
   echo "Starting main in $remotehost ..."
