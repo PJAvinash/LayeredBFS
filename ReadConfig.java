@@ -7,7 +7,7 @@ import java.net.InetAddress;
 import java.util.ArrayList;
 
 public class ReadConfig {
-    public static Node read(String filePath) {
+    public static Node read(String filePath,int root) {
         Integer numNodes = 0;
         ArrayList<Integer> uidList = new ArrayList<Integer>();
         ArrayList<String> hostnames = new ArrayList<String>();
@@ -50,7 +50,7 @@ public class ReadConfig {
          int index =  hostnames.indexOf(hostname);
          int uid = uidList.get(index);
          int port = portnumbers.get(index);
-         Node processingNode = new Node(uid,hostname,port,false);
+         Node processingNode = new Node(uid,hostname,port,root == uid);
          for(int i = 0; i< edges.size(); i++){
             if(edges.get(i).getSource() == uid || edges.get(i).getDestination() ==uid){
                 int otherendUID = edges.get(i).getOtherEnd(uid);

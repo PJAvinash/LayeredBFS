@@ -95,15 +95,48 @@ public class Node {
         }
     }
 
-    // public void transitionRoot(){
-    //     switch(this.state){
-    //         case FINDPARENT:
-    //         case FINDCHILDREN:
-    //         case WAIT_FOR_ACK:
-    //         case 
-    //     }
+    public void transitionRoot(){
+        switch(this.state){
+            case FINDPARENT:
+            this.setState(NodeState.FINDCHILDREN);
+            this.transitionRoot();
+            break;
+            case FINDCHILDREN:
+            this.sendChildRequest();
+            this.setState(NodeState.WAIT_FOR_ACK);
+            break;
+            case WAIT_FOR_ACK:
+            List<Message> ackMessages = this.messageQueue.stream().filter(t -> (t.mtype == MessageType.POSACK ||t.mtype ==  MessageType.NEGACK)).collect(Collectors.toList());
+            if(this.adjacentNodes.stream().filter(t -> t.getEdgeType() == EdgeType.NEIGHBOR).map(t -> t.getUID()).toList() == ackMessages.stream().map(t -> t.from).toList()){
+                ackMessages.stream().filter(t -> t.mtype == MessageType.POSACK).forEach(t -> this.updateEdgeType(t.from, EdgeType.CHILDREN));
+                ackMessages.stream().filter(t -> t.mtype == MessageType.NEGACK).forEach(t -> this.updateEdgeType(t.from, EdgeType.NEIGHBOR_REJECT));
+                this.messageQueue.removeAll(ackMessages);
+                this.setState(NodeState.RELAY_BROADCAST);
+                this.transitionRoot();
+            }
+            break;
+            case RELAY_BROADCAST:
+            this.sendChildGo();
+            this.setState(NodeState.RELAY_CONVERGECAST);
+            break;
+            case RELAY_CONVERGECAST:
+            List<Message> convergeCastMessages = this.messageQueue.stream().filter(t -> (t.mtype == MessageType.SAFE || t.mtype == MessageType.COMPLTE) && t.roundNumber == this.roundNumber).collect(Collectors.toList());
+            if(convergeCastMessages.stream().map(t -> t.from).toList() == this.adjacentNodes.stream().filter(t -> t.getEdgeType() == EdgeType.CHILDREN).map(t -> t.getUID()).toList()){
+                convergeCastMessages.stream().filter(t-> t.mtype == MessageType.COMPLTE).forEach(t -> this.updateEdgeType(t.from, EdgeType.CHILDREN_COMPLTE));
+                if(convergeCastMessages.stream().filter(t-> t.mtype == MessageType.SAFE).count() > 0){
+                    this.setState(NodeState.RELAY_BROADCAST);
+                    // print adjacent layers.
+                }else{
+                    // print
+                    this.printAdjacent();
+                }
+                this.roundNumber = this.roundNumber + 1;
+                this.messageQueue.removeAll(convergeCastMessages);
+            }
+            break;
+        }
 
-    // }
+    }
     public void transitionNonRoot() {
         switch(this.state){
             case FINDPARENT:
@@ -128,19 +161,20 @@ public class Node {
             if(goMessages.size() > 0){
                 this.sendChildRequest();
                 this.setState(NodeState.WAIT_FOR_ACK);
+                this.messageQueue.removeAll(goMessages);
             }
             break;
             case WAIT_FOR_ACK:
             //wait for acks 
             //update all list of children
             //send safe to parent change state to relay broad cast
-            List<Message> ackMessages = this.messageQueue.stream().filter(t -> t.mtype == MessageType.POSACK ||t.mtype ==  MessageType.NEGACK).collect(Collectors.toList());
+            List<Message> ackMessages = this.messageQueue.stream().filter(t -> (t.mtype == MessageType.POSACK ||t.mtype ==  MessageType.NEGACK)).collect(Collectors.toList());
             if(this.adjacentNodes.stream().filter(t -> t.getEdgeType() == EdgeType.NEIGHBOR).map(t -> t.getUID()).toList() == ackMessages.stream().map(t -> t.from).toList()){
                 ackMessages.stream().filter(t -> t.mtype == MessageType.POSACK).forEach(t -> this.updateEdgeType(t.from, EdgeType.CHILDREN));
                 ackMessages.stream().filter(t -> t.mtype == MessageType.NEGACK).forEach(t -> this.updateEdgeType(t.from, EdgeType.NEIGHBOR_REJECT));
-                this.messageQueue.removeAll(ackMessages);
                 this.sendParentSafe();
                 this.setState(NodeState.RELAY_BROADCAST);
+                this.messageQueue.removeAll(ackMessages);
             }
             break;
             case RELAY_BROADCAST:
@@ -157,7 +191,9 @@ public class Node {
                     this.sendParentComplete();
                     //print adjacent
                 }
+                this.roundNumber = this.roundNumber+1;
                 this.setState(NodeState.RELAY_CONVERGECAST);
+                this.messageQueue.removeAll(goMessagesRelay);
             }
             break;
             case RELAY_CONVERGECAST:
@@ -175,16 +211,27 @@ public class Node {
                 }else{
                     this.sendParentComplete();
                 }
+                this.messageQueue.removeAll(convergeCastMessages);
             }
             break;
         }
     }
     public void transition(){
         if(this.isRoot){
-            
+            this.transitionRoot();
         }else{
             this.transitionNonRoot();
         }   
+    }
+
+    public void startLayeredBFS() throws IOException{
+        this.startListening();
+    }
+
+    private void printAdjacent(){
+        System.out.println("All Children nodes in BFS Tree are determined .adjacent nodes for : " + this.uid + "  parent: " + this.parentUID);
+        this.adjacentNodes.stream().filter(t -> t.getEdgeType() == EdgeType.CHILDREN_COMPLTE).forEach(t-> System.out.println(this.uid+":    ("+t.getUID()+" : "+t.getHostname()+")    "));
+
     }
 
     public void sendChildRequest(){
