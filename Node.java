@@ -33,7 +33,7 @@ public class Node {
         this.hostName = hostName;
         this.port = port;
         this.roundNumber = 0;
-        this.state = NodeState.FINDCHILDREN;
+        this.state = NodeState.FINDPARENT;
         this.layeredBFSComplete = false;
         this.parentFound = false;
         this.isRoot = isRoot;
