@@ -1,13 +1,12 @@
-
-
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 
 public class ReadConfig {
-    public static Node read(String filePath,int root) {
+    public static Node read(String filePath,int root) throws UnknownHostException{
         Integer numNodes = 0;
         ArrayList<Integer> uidList = new ArrayList<Integer>();
         ArrayList<String> hostnames = new ArrayList<String>();
