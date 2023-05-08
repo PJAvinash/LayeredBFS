@@ -95,43 +95,43 @@ public class Node {
     }
 
     public void transitionRoot(){
-        switch(this.state){
+        switch (this.state) {
             case FINDPARENT:
-            this.setState(NodeState.FINDCHILDREN);
-            this.transitionRoot();
-            break;
-            case FINDCHILDREN:
-            this.sendChildRequest();
-            this.setState(NodeState.WAIT_FOR_ACK);
-            break;
-            case WAIT_FOR_ACK:
-            List<Message> ackMessages = this.messageQueue.stream().filter(t -> (t.mtype == MessageType.POSACK ||t.mtype ==  MessageType.NEGACK)).collect(Collectors.toList());
-            if(this.adjacentNodes.stream().filter(t -> t.getEdgeType() == EdgeType.NEIGHBOR).map(t -> t.getUID()).collect(Collectors.toList()) == ackMessages.stream().map(t -> t.from).collect(Collectors.toList())){
-                ackMessages.stream().filter(t -> t.mtype == MessageType.POSACK).forEach(t -> this.updateEdgeType(t.from, EdgeType.CHILDREN));
-                ackMessages.stream().filter(t -> t.mtype == MessageType.NEGACK).forEach(t -> this.updateEdgeType(t.from, EdgeType.NEIGHBOR_REJECT));
-                this.messageQueue.removeAll(ackMessages);
-                this.setState(NodeState.RELAY_BROADCAST);
+                this.setState(NodeState.FINDCHILDREN);
                 this.transitionRoot();
-            }
-            break;
-            case RELAY_BROADCAST:
-            this.sendChildGo();
-            this.setState(NodeState.RELAY_CONVERGECAST);
-            break;
-            case RELAY_CONVERGECAST:
-            List<Message> convergeCastMessages = this.messageQueue.stream().filter(t -> (t.mtype == MessageType.SAFE || t.mtype == MessageType.COMPLTE) && t.roundNumber == this.roundNumber).collect(Collectors.toList());
-            if(convergeCastMessages.stream().map(t -> t.from).collect(Collectors.toList()) == this.adjacentNodes.stream().filter(t -> t.getEdgeType() == EdgeType.CHILDREN).map(t -> t.getUID()).collect(Collectors.toList())){
-                convergeCastMessages.stream().filter(t-> t.mtype == MessageType.COMPLTE).forEach(t -> this.updateEdgeType(t.from, EdgeType.CHILDREN_COMPLTE));
-                if(convergeCastMessages.stream().filter(t-> t.mtype == MessageType.SAFE).count() > 0){
+                break;
+            case FINDCHILDREN:
+                this.sendChildRequest();
+                this.setState(NodeState.WAIT_FOR_ACK);
+                break;
+            case WAIT_FOR_ACK:
+                List<Message> ackMessages = this.messageQueue.stream().filter(t -> (t.mtype == MessageType.POSACK || t.mtype == MessageType.NEGACK)).collect(Collectors.toList());
+                if (this.adjacentNodes.stream().filter(t -> t.getEdgeType() == EdgeType.NEIGHBOR).map(t -> t.getUID()).collect(Collectors.toSet()) == ackMessages.stream().map(t -> t.from).collect(Collectors.toSet())) {
+                    ackMessages.stream().filter(t -> t.mtype == MessageType.POSACK).forEach(t -> this.updateEdgeType(t.from, EdgeType.CHILDREN));
+                    ackMessages.stream().filter(t -> t.mtype == MessageType.NEGACK).forEach(t -> this.updateEdgeType(t.from, EdgeType.NEIGHBOR_REJECT));
+                    this.messageQueue.removeAll(ackMessages);
                     this.setState(NodeState.RELAY_BROADCAST);
-                }else{
-                    // print adjacent layers.
-                    this.printAdjacent();
+                    this.transitionRoot();
                 }
-                this.roundNumber = this.roundNumber + 1;
-                this.messageQueue.removeAll(convergeCastMessages);
-            }
-            break;
+                break;
+            case RELAY_BROADCAST:
+                this.sendChildGo();
+                this.setState(NodeState.RELAY_CONVERGECAST);
+                break;
+            case RELAY_CONVERGECAST:
+                List<Message> convergeCastMessages = this.messageQueue.stream().filter(t -> (t.mtype == MessageType.SAFE || t.mtype == MessageType.COMPLTE)&& t.roundNumber == this.roundNumber).collect(Collectors.toList());
+                if (convergeCastMessages.stream().map(t -> t.from).collect(Collectors.toSet()) == this.adjacentNodes.stream().filter(t -> t.getEdgeType() == EdgeType.CHILDREN).map(t -> t.getUID()).collect(Collectors.toSet())) {
+                    convergeCastMessages.stream().filter(t -> t.mtype == MessageType.COMPLTE).forEach(t -> this.updateEdgeType(t.from, EdgeType.CHILDREN_COMPLTE));
+                    if (convergeCastMessages.stream().filter(t -> t.mtype == MessageType.SAFE).count() > 0) {
+                        this.setState(NodeState.RELAY_BROADCAST);
+                    } else {
+                        // print adjacent layers.
+                        this.printAdjacent();
+                    }
+                    this.roundNumber = this.roundNumber + 1;
+                    this.messageQueue.removeAll(convergeCastMessages);
+                }
+                break;
         }
 
     }
@@ -168,7 +168,7 @@ public class Node {
             //update all list of children
             //send safe to parent change state to relay broad cast
             List<Message> ackMessages = this.messageQueue.stream().filter(t -> (t.mtype == MessageType.POSACK ||t.mtype ==  MessageType.NEGACK)).collect(Collectors.toList());
-            if(this.adjacentNodes.stream().filter(t -> t.getEdgeType() == EdgeType.NEIGHBOR).map(t -> t.getUID()).collect(Collectors.toList()) == ackMessages.stream().map(t -> t.from).collect(Collectors.toList())){
+            if(this.adjacentNodes.stream().filter(t -> t.getEdgeType() == EdgeType.NEIGHBOR).map(t -> t.getUID()).collect(Collectors.toSet()) == ackMessages.stream().map(t -> t.from).collect(Collectors.toSet())){
                 ackMessages.stream().filter(t -> t.mtype == MessageType.POSACK).forEach(t -> this.updateEdgeType(t.from, EdgeType.CHILDREN));
                 ackMessages.stream().filter(t -> t.mtype == MessageType.NEGACK).forEach(t -> this.updateEdgeType(t.from, EdgeType.NEIGHBOR_REJECT));
                 this.sendParentSafe();
@@ -201,7 +201,7 @@ public class Node {
             // if there are children  wait until all the children reply safe or complete. 
             // once all the children send safe or complete reply to parent safe or complete
             List<Message> convergeCastMessages = this.messageQueue.stream().filter(t -> (t.mtype == MessageType.SAFE || t.mtype == MessageType.COMPLTE) && t.roundNumber == this.roundNumber).collect(Collectors.toList());
-            if(convergeCastMessages.stream().map(t -> t.from).collect(Collectors.toList()) == this.adjacentNodes.stream().filter(t -> t.getEdgeType() == EdgeType.CHILDREN).map(t -> t.getUID()).collect(Collectors.toList())){
+            if(convergeCastMessages.stream().map(t -> t.from).collect(Collectors.toSet()) == this.adjacentNodes.stream().filter(t -> t.getEdgeType() == EdgeType.CHILDREN).map(t -> t.getUID()).collect(Collectors.toSet())){
                 convergeCastMessages.stream().filter(t-> t.mtype == MessageType.COMPLTE).forEach(t -> this.updateEdgeType(t.from, EdgeType.CHILDREN_COMPLTE));
                 if(convergeCastMessages.stream().filter(t-> t.mtype == MessageType.SAFE).count() > 0){
                     this.sendParentSafe();
