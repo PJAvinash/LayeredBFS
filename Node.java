@@ -148,9 +148,9 @@ public class Node {
                 this.setParent(childRequests.get(0).from);
                 this.messageQueue.remove(childRequests.get(0));
                 this.sendPosAck();
+                this.sendNegAck();
+                this.setState(NodeState.FINDCHILDREN);
             }
-            this.sendNegAck();
-            this.setState(NodeState.FINDCHILDREN);
             break;
             case FINDCHILDREN:
             //listen from parent
