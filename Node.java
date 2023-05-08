@@ -27,6 +27,7 @@ public class Node {
     private ArrayList<AdjNode> adjacentNodes = new ArrayList<AdjNode>();
 
     private List<Message> messageQueue = Collections.synchronizedList(new ArrayList<Message>());
+    private boolean logging = true;
     
     public Node(int uid,String hostName,int port,boolean isRoot){
         this.uid = uid;
@@ -37,6 +38,7 @@ public class Node {
         this.layeredBFSComplete = false;
         this.parentFound = false;
         this.isRoot = isRoot;
+        this.parentUID = uid;
     }
     public void addNeighbor(int uid,String hostName,int port){
         this.adjacentNodes.add(new AdjNode(uid,hostName,port));
@@ -216,6 +218,9 @@ public class Node {
         }
     }
     public void transition(){
+        if(messageQueue.size() > 0){
+            this.consolelog(" message :" + messageQueue.get(messageQueue.size() -1 ).toString());
+        }
         if(this.isRoot){
             this.transitionRoot();
         }else{
@@ -337,5 +342,11 @@ public class Node {
                 //e.printStackTrace();
             }
         });
+    }
+
+    private void consolelog(String msg){
+        if(this.logging){
+            System.out.println("uid:"+this.uid+" state:"+this.state.toString() + " : "+msg);
+        }
     }
 }
