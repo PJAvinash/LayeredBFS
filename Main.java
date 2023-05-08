@@ -1,5 +1,3 @@
-package LayeredBFS;
-
 import java.io.IOException;
 
 public class Main {
