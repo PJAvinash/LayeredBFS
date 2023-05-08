@@ -8,4 +8,13 @@ public class Message implements Serializable{
         this.mtype = mtype;
         this.roundNumber = roundNumber;
     }
+    @Override
+    public String toString() {
+        String json = "{";
+        json += "\"from\":" + from + ",";
+        json += "\"roundNumber\":" + roundNumber + ",";
+        json += "\"messageType\":\"" + mtype.toString() + "\"";
+        json += "}";
+        return json;
+    }
 }
