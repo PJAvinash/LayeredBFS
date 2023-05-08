@@ -1,5 +1,3 @@
-package LayeredBFS;
-
 public class AdjNode {
     private int uid;
     private String hostname;

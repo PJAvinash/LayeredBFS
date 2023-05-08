@@ -1,4 +1,3 @@
-package LayeredBFS;
 public enum MessageType{
     GO,
     CHILDREQUEST,

@@ -1,7 +1,4 @@
-package LayeredBFS;
-
 import java.io.Serializable;
-
 public class Message implements Serializable{
     int roundNumber;
     int from;

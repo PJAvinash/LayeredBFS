@@ -1,5 +1,3 @@
-package LayeredBFS;
-
 public enum EdgeType {
     NEIGHBOR,
     NEIGHBOR_REJECT,

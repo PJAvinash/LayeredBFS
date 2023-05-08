@@ -1,5 +1,3 @@
-package LayeredBFS;
-
 public enum NodeState {
     FINDPARENT,
     FINDCHILDREN,

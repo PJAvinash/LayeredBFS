@@ -1,5 +1,3 @@
-package LayeredBFS;
-
 public class Edge {
     private int source;
     private int destination;
