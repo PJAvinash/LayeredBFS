@@ -29,7 +29,7 @@ public class Node {
     private ArrayList<AdjNode> adjacentNodes = new ArrayList<AdjNode>();
 
     private List<Message> messageQueue = Collections.synchronizedList(new ArrayList<Message>());
-    private boolean logging = true;
+    private boolean logging = false;
     
     public Node(int uid,String hostName,int port,boolean isRoot){
         this.uid = uid;
