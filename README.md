@@ -13,10 +13,10 @@ Important commands for running.
 
 cd Launcher
 chmod +x launcher.sh
-./launcher.sh "<config filename>" "<root node UID>"
+./launcher.sh "{config filename}" "{root node UID}"
 
 Important commands for freeing up resources 
-python3 freeports.py "<config filename>"
+python3 freeports.py "{config filename}"
 
 
 Execution these commands should be done while in Launcher directory. 
