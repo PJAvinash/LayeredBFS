@@ -129,10 +129,12 @@ public class Node {
                     convergeCastMessages.stream().filter(t -> t.mtype == MessageType.COMPLTE).forEach(t -> this.updateEdgeType(t.from, EdgeType.CHILDREN_COMPLTE));
                     if (convergeCastMessages.stream().filter(t -> t.mtype == MessageType.SAFE).count() > 0) {
                         this.setState(NodeState.RELAY_BROADCAST);
+                        this.transitionRoot();
                     } else {
                         // print adjacent layers.
                         this.printAdjacent();
                     }
+                    // start the next round.
                     this.messageQueue.removeAll(convergeCastMessages);
                 }
                 break;
