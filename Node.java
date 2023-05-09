@@ -158,7 +158,7 @@ public class Node {
             //listen from parent
             //send child requests to all neighbours;
             //change to wait for ack
-            List<Message> goMessages = this.messageQueue.stream().filter(t -> t.mtype == MessageType.GO && t.roundNumber == this.roundNumber).collect(Collectors.toList());
+            List<Message> goMessages = this.messageQueue.stream().filter(t -> t.mtype == MessageType.GO && t.roundNumber == (this.roundNumber+1)).collect(Collectors.toList());
             if(goMessages.size() > 0){
                 this.sendChildRequest();
                 this.setState(NodeState.WAIT_FOR_ACK);
