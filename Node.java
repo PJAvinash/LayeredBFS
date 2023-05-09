@@ -186,13 +186,13 @@ public class Node {
             // change state to relay converge cast;
             List<Message> goMessagesRelay = this.messageQueue.stream().filter(t -> t.mtype == MessageType.GO && t.roundNumber == (this.roundNumber+1) && t.from == this.parentUID).collect(Collectors.toList());
             if(goMessagesRelay.size() > 0){
+                this.roundNumber = this.roundNumber+1;
                 if(this.adjacentNodes.stream().filter(t -> t.getEdgeType() == EdgeType.CHILDREN).count() > 0){
                     this.sendChildGo();
                 }else{
                     this.sendParentComplete();
                     //print adjacent
                 }
-                this.roundNumber = this.roundNumber+1;
                 this.setState(NodeState.RELAY_CONVERGECAST);
                 this.messageQueue.removeAll(goMessagesRelay);
             }
