@@ -204,6 +204,7 @@ public class Node {
                     this.sendChildGo();
                 }else{
                     this.sendParentComplete();
+                    this.printAdjacent();
                     //print adjacent
                 }
                 this.setState(NodeState.RELAY_CONVERGECAST);
@@ -224,6 +225,7 @@ public class Node {
                     // print adjacent layers.
                 }else{
                     this.sendParentComplete();
+                    this.printAdjacent();
                 }
                 this.messageQueue.removeAll(convergeCastMessages);
             }
