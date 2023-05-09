@@ -12,6 +12,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
+import javax.lang.model.element.ElementKind;
+
 
 public class Node {
     private int uid;
@@ -58,7 +60,7 @@ public class Node {
                 }
                 break;
             case FINDCHILDREN:
-                if (updateState == NodeState.WAIT_FOR_ACK) {
+                if (updateState == NodeState.WAIT_FOR_ACK || updateState == NodeState.RELAY_CONVERGECAST) {
                     this.state = updateState;
                 }
                 break;
@@ -160,10 +162,18 @@ public class Node {
             //change to wait for ack
             List<Message> goMessages = this.messageQueue.stream().filter(t -> t.mtype == MessageType.GO && t.from == this.parentUID).collect(Collectors.toList());
             if(goMessages.size() > 0){
+                // send child requests only if you have adjNodes left.
                 this.roundNumber = goMessages.get(0).roundNumber;
-                this.sendChildRequest();
-                this.setState(NodeState.WAIT_FOR_ACK);
+                if(this.adjacentNodes.stream().filter(t -> t.getEdgeType() == EdgeType.NEIGHBOR).count() > 0){
+                    this.sendChildRequest();
+                    this.setState(NodeState.WAIT_FOR_ACK);  
+                }else{
+                    this.sendParentComplete();
+                    this.setState(NodeState.RELAY_CONVERGECAST);
+                    this.printAdjacent();
+                }
                 this.messageQueue.removeAll(goMessages);
+                
             }
             break;
             case WAIT_FOR_ACK:
