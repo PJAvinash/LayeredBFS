@@ -117,6 +117,7 @@ public class Node {
                 }
                 break;
             case RELAY_BROADCAST:
+                this.roundNumber = this.roundNumber + 1;
                 this.sendChildGo();
                 this.setState(NodeState.RELAY_CONVERGECAST);
                 break;
@@ -130,7 +131,6 @@ public class Node {
                         // print adjacent layers.
                         this.printAdjacent();
                     }
-                    this.roundNumber = this.roundNumber + 1;
                     this.messageQueue.removeAll(convergeCastMessages);
                 }
                 break;
