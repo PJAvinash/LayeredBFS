@@ -124,7 +124,7 @@ public class Node {
                 this.setState(NodeState.RELAY_CONVERGECAST);
                 break;
             case RELAY_CONVERGECAST:
-                List<Message> convergeCastMessages = this.messageQueue.stream().filter(t -> (t.mtype == MessageType.SAFE || t.mtype == MessageType.COMPLTE)&& t.roundNumber == this.roundNumber).collect(Collectors.toList());
+                List<Message> convergeCastMessages = this.messageQueue.stream().filter(t -> ((t.mtype == MessageType.SAFE && t.roundNumber == this.roundNumber) || t.mtype == MessageType.COMPLTE)).collect(Collectors.toList());
                 if (convergeCastMessages.stream().map(t -> t.from).collect(Collectors.toSet()).equals(this.adjacentNodes.stream().filter(t -> t.getEdgeType() == EdgeType.CHILDREN).map(t -> t.getUID()).collect(Collectors.toSet()))) {
                     convergeCastMessages.stream().filter(t -> t.mtype == MessageType.COMPLTE).forEach(t -> this.updateEdgeType(t.from, EdgeType.CHILDREN_COMPLTE));
                     if (convergeCastMessages.stream().filter(t -> t.mtype == MessageType.SAFE).count() > 0) {
@@ -215,7 +215,7 @@ public class Node {
             // if there are no children set algo is complete. 
             // if there are children  wait until all the children reply safe or complete. 
             // once all the children send safe or complete reply to parent safe or complete
-            List<Message> convergeCastMessages = this.messageQueue.stream().filter(t -> (t.mtype == MessageType.SAFE || t.mtype == MessageType.COMPLTE) && t.roundNumber == this.roundNumber).collect(Collectors.toList());
+            List<Message> convergeCastMessages = this.messageQueue.stream().filter(t -> ((t.mtype == MessageType.SAFE && t.roundNumber == this.roundNumber) || t.mtype == MessageType.COMPLTE)).collect(Collectors.toList());
             if(convergeCastMessages.stream().map(t -> t.from).collect(Collectors.toSet()).equals(this.adjacentNodes.stream().filter(t -> t.getEdgeType() == EdgeType.CHILDREN).map(t -> t.getUID()).collect(Collectors.toSet()))){
                 convergeCastMessages.stream().filter(t-> t.mtype == MessageType.COMPLTE).forEach(t -> this.updateEdgeType(t.from, EdgeType.CHILDREN_COMPLTE));
                 if(convergeCastMessages.stream().filter(t-> t.mtype == MessageType.SAFE).count() > 0){
