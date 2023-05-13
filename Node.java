@@ -232,7 +232,7 @@ public class Node {
             break;
         }
     }
-    public void transition(){
+    public synchronized void transition(){
         if(messageQueue.size() > 0){
             this.consolelog(" message :" + messageQueue.get(messageQueue.size() -1 ).toString());
         }
